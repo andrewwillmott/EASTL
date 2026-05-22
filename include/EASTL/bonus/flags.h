@@ -5,99 +5,99 @@
 //
 // introduction
 // --------------
-// 
+//
 // hello there.
-// 
+//
 // Flags are usually defined on a per-bit basis, and stored in integrals. This file
 // defines a templated type that encapsulates that logic as a thin-wrapper around an
 // integral. The benefit here is that [i.e.] enums that are not already shifted can
 // be seamlessly used if the corresponding flags type knows they're pre-shifted.
-// 
-// 
+//
+//
 // context
 // ---------
 // Here's a really common example where everything is _easy_:
 // (operators & conversions left out for brevity)
-// 
+//
 //    enum class Dragons : uint32_t { Fire = 1, Ice = 2, Poison = 4, Golden = 8 };
 //    uint32_t flags = Dragons::Fire | Dragons::Poison;
-// 
+//
 // Here's a really common example where things are _harder_:
-// 
+//
 //    enum class Knights : uint16_t { Armoured, Cowardly, Shining, Ni };
 //    uint32_t flags = (1 << Knights::Armoured) | (1 << Knights::Shining);
-// 
+//
 // Fun fact: the shift operator's resultant type is the type of the LHS, and
 // bitwise or-operator will promote its arguments of uint16_t to int on 64-bit
 // systems, meaning there are _many more_ omitted casts then may first appear.
-// 
+//
 // In the above examples, we would call `Dragons` _post-shifted_, and `Knights`
 // _pre-shifted_. Example code perhaps trivialises the issue; in large codebases
 // keeping track of which flags are pre- or post-shifted can be annoying, and
 // there is genuine need for both mixed within the same code. Awful!
-// 
-// 
+//
+//
 // basic_flags (prefer using bitflags/maskflags)
 // -----------------------------------------------
 // This structure wraps an integral and provides all common bitwise operations for
 // that integral. It will automatically shift pre-shifted flags (kind of, you need
 // to tell it that a flag is pre-shifted (bitflags), or post-shifted (maskflags)).
-// 
+//
 // This example demonstrates pre-shifted flags being used without any shifting
 // required on the user's part. If the user had accidentally used eastl::maskflags<>
 // instead of bitflags<>, then no shifting would occur and there would be _bugs_:
-// 
+//
 //    enum class Knights : uint16_t { Armoured, Cowardly, Shining, Ni };
 //    using KnightFlags = eastl::bitflags<Knights>;
-// 
+//
 //    // default construct = all bits zero
 //    KnightFlags knight_useless;
-// 
+//
 //    // takes an initializer_list if so desired
 //    KnightFlags knight_in_shining_armour{Knights::Armoured, Knights::Shining};
-//    
+//
 //    // supports all typical operators
 //    if (knight_in_shining_armour & Knights::Shining)
 //    {
 //       // ...
 //    }
-// 
+//
 //    // being brave is part of the job description
 //    knight_useless = Knights::Cowardly;
-// 
+//
 //    // integrals would support implicit conversion to bool, so we do too
 //    if (knight_useless)
 //    {
 //    }
-// 
-// 
-// 
+//
+//
+//
 //
 // macros for defining flags
 // ---------------------------
-// 
+//
 // The following macros are shorthands for defining a flag-type based off
 // an enum-type. This enum-type can either be known ahead of time, using
 // EASTL_DECLARE_BITFLAGS or EASTL_DECLARE_MASKFLAGS, or it can be defined
 // directly then and there, using the "_ENUM_CLASS" versions of the macros.
-// 
+//
 // These macros help by defining certain bitwise operators for enum-classes.
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 // EASTL_DECLARE_BITFLAGS
 // EASTL_DECLARE_MASKFLAGS
 // -------------------------
 // These macros simply take an existing enum-type and define an alias for a
 // flags-type (bitflags or maskflags) of that enum-type:
-// 
+//
 //    enum class DragonType { Happy, Sad, Drunk };
-// 
+//
 //    EASTL_DECLARE_BITFLAGS(DragonFlags, DragonType);
-// 
+//
 //      ^ the above macro has expanded to something akin to:
-// 
+//
 //        using DragonFlags = ::eastl::bitflags<DragonType>;
 //        inline constexpr DragonFlags operator | (DragonType lhs, DragonType rhs) { /* snip */ }
 //
@@ -110,37 +110,37 @@
 //        Brilliant = 1, Imbecile = 2, Evil = 4, Forgetful = 8,
 //        MaybeHarmless = (Evil | Forgetful)
 //    };
-// 
+//
 //    EASTL_DECLARE_MASKFLAGS(WizardFlags, WizardType);
-// 
+//
 //      ^ macro expansion for the above macro looks like:
-// 
+//
 //        using WizardFlags = ::eastl::maskflags<WizardType>;
 //        inline constexpr WizardFlags operator | (WizardType lhs, WizardType rhs) { /* snip */ }
 //        inline constexpr WizardFlags operator & (WizardType lhs, WizardType rhs) { /* snip */ }
 //        inline constexpr WizardFlags operator ^ (WizardType lhs, WizardType rhs) { /* snip */ }
-// 
-// 
-// 
-// 
+//
+//
+//
+//
 // EASTL_DECLARE_BITFLAGS_ENUM_CLASS
 // EASTL_DECLARE_MASKFLAGS_ENUM_CLASS
 // -----------------------------------
 // These macros are convenience macros to both declare the flag-type, and
 // in-place define an enum-class (the second parameter). Operators for the
 // enum-type are automatically generated too:
-// 
+//
 // Note that this first example is again using BITFLAGS.
-// 
+//
 //    EASTL_DECLARE_BITFLAGS_ENUM_CLASS(DragonFlags, DragonType)
 //    {
 //        Jubilent,
 //        Depressed,
 //        Smashed
 //    };
-// 
+//
 // This generates code similar to the following:
-// 
+//
 //    enum class DragonType;
 //    using DragonFlags = ::eastl::bitflags<DragonType>;
 //    inline constexpr DragonFlags operator | (DragonType lhs, DragonType rhs) { /* snip */ }
@@ -150,12 +150,12 @@
 //        Depressed,
 //        Smashed
 //    };
-// 
-// 
+//
+//
 // Note: You will still need to pre-shift your enum values yourself when using
 // the MASKFLAGS version of these macros, just as if you were writing the enum
 // without the macro:
-// 
+//
 //    EASTL_DECLARE_MASKFLAGS_ENUM_CLASS(SquireFlags, Squires)
 //    {
 //        Absent = 0,
@@ -163,12 +163,12 @@
 //        Keen =          (1<<1),
 //        Jaded =         (1<<2),
 //        Competant =     (1<<3),
-// 
+//
 //        FreshOutOfUni = Inexperienced | Keen
 //    };
-// 
+//
 // Macro expansion:
-// 
+//
 //    enum class Squires;
 //    using SquireFlags = ::eastl::bitflags<Squires>;
 //    inline constexpr SquireFlags operator | (Squires lhs, Squires rhs) { /* snip */ }
@@ -181,12 +181,12 @@
 //        Keen =          (1<<1),
 //        Jaded =         (1<<2),
 //        Competant =     (1<<3),
-// 
+//
 //        FreshOutOfUni = Inexperienced | Keen
 //    };
-// 
+//
 // Usage:
-// 
+//
 //    SquireFlags flags{Squires::FreshOutOfUni};
 //    if (flags & Squires::Keen) { /* snip */ }
 //    if (flags != Squires::Absent) { /* snip */ }
@@ -267,7 +267,7 @@ namespace eastl
 		constexpr basic_flags& operator |= (basic_flags) noexcept;
 		constexpr basic_flags& operator &= (basic_flags) noexcept;
 		constexpr basic_flags& operator ^= (basic_flags) noexcept;
-		
+
 		constexpr basic_flags& operator |= (flag_type) noexcept;
 		constexpr basic_flags& operator &= (flag_type) noexcept;
 		constexpr basic_flags& operator ^= (flag_type) noexcept;
@@ -326,25 +326,25 @@ namespace eastl
 // -----------------
 // marshalls the flag-type into a mask-type we can perform bitwise operations
 // on with our mask member
-// 
+//
 // 'bitflags' expects the flags to be sequentially numbered, where the
 // value of each flag signifies the bit-position within the mask-type that
 // will be affected
-// 
+//
 //      // the bottom four bits (position 0, 1, 2, 3) will be affected
 //      enum class MaidenType { Distressed, Defiant, Conniving, Charasmatic };
-// 
+//
 //      // bits at positions 3, 4, and 8
 //      enum class KnightType { Armoured = 3, Lazy = 4, Jousting = 8 };
-// 
-// 
+//
+//
 // 'maskflags' on the other hand, expects the values of the flags to be
 // _already_ shifted to the correct position. taking the above examples
 // and rewriting them as bitmasks:
-// 
+//
 //      // the bottom four bits (position 0, 1, 2, 3) will be affected
 //      enum class MaidenType { Distressed = 1, Defiant = 2, Conniving = 4, Charasmatic = 8 };
-// 
+//
 //      // bits at positions 3, 4, and 8 (note that "Absent" contributes nothing)
 //      enum class KnightType { Absent = 0, Armoured = (1<<3), Lazy = (1<<4), Jousting = (1<<8) };
 //
@@ -354,7 +354,7 @@ namespace eastl
 	template <typename TagType, typename FlagType>
 	struct flag_marshaller
 	{
-		static_assert(!std::is_integral_v<FlagType>);
+		static_assert(!eastl::is_integral_v<FlagType>);
 
 		using tag_type = TagType;
 		using flag_type = FlagType;
@@ -569,7 +569,7 @@ namespace eastl
 	{
 		return basic_flags<F, M>{BF_MASK_CAST_(lhs.m_mask ^ M::to_mask(rhs))};
 	}
-	
+
 	template <typename F, typename M>
 	inline constexpr basic_flags<F, M> operator & (typename basic_flags<F, M>::flag_type lhs, basic_flags<F, M> rhs) noexcept
 	{
@@ -634,11 +634,11 @@ namespace eastl
 // returns the mask of a basic_flags. we have made the conversion operator
 // explicit, so users would have to first know (or get, as the case may be)
 // the mask_type, and perform an explicit cast.
-// 
+//
 // this is good because it makes people aware of when their flags are being
 // interpreted as an integral, but it is kind of wordy. so 'mask_of' has
 // been introduced to shorten this.
-// 
+//
 // 'mask' was not chosen due to the high potential for name clashes.
 //
 namespace eastl
@@ -654,7 +654,7 @@ namespace eastl
 //
 // macros
 // --------
-// 
+//
 // see top-of-file for explanation
 //
 #define EASTL_DECLARE_BITFLAGS(flagstype, enumtype) \

@@ -635,7 +635,7 @@ namespace eastl
 			#define EASTL_DEBUG_BREAK() __builtin_debugtrap()  // Consider using the CLANG define
         #elif (defined(EA_PROCESSOR_ARM) && !defined(EA_PROCESSOR_ARM64)) && defined(__APPLE__)
             #define EASTL_DEBUG_BREAK() asm("trap")
-        #elif defined(EA_PROCESSOR_ARM64) && defined(__APPLE__)
+        #elif (defined(EA_PROCESSOR_ARM64) && defined(__APPLE__)) || defined(EA_PROCESSOR_WASM)
             #include <signal.h>
             #include <unistd.h>
             #define EASTL_DEBUG_BREAK() kill( getpid(), SIGINT )
@@ -1594,7 +1594,7 @@ typedef EASTL_SSIZE_T eastl_ssize_t; // Signed version of eastl_size_t. Concept 
 //         void* allocate(size_t n, int flags = 0);
 //         void* allocate(size_t n, size_t alignment, size_t offset, int flags = 0);
 //         void  deallocate(void* p, size_t n);
-// 
+//
 //		   // optional:
 //		   template<typename T, typename... Args>
 //		   void construct(T* p, Args&&... args);
