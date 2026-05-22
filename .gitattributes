@@ -4,3 +4,15 @@
 .appveyor.yml -text eol=crlf
 .appveyor-mingw.yml -text eol=crlf
 ci-*.cmd -text eol=crlf
+
+# cut out stuff we don't want in build archive for halcyon3...
+benchmark export-ignore
+doc export-ignore
+scripts export-ignore
+test export-ignore
+
+# for now, it's a MB and we have Atomic.hpp. Might need for 3rd party deps?
+include/EASTL/internal/atomic/* export-ignore
+
+CMakeLists.txt export-ignore
+_config.yml export-ignore
