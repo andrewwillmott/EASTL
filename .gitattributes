@@ -16,3 +16,6 @@ include/EASTL/internal/atomic/* export-ignore
 
 CMakeLists.txt export-ignore
 _config.yml export-ignore
+.clang-format export-ignore
+.github export-ignore
+.p4ignore export-ignore
